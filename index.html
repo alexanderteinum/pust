@@ -4,15 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pust</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #07192e;
+            --primary: #bae6fd;
+            --accent: rgba(56, 189, 248, 0.7);
+        }
+
         body {
             margin: 0;
-            background: #07192e;
-            color: #bae6fd;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--primary);
+            font-family: 'Inter', sans-serif;
             height: 100vh;
             display: flex;
             align-items: center;
@@ -22,178 +26,149 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .zen-circle {
+        .zen {
             position: relative;
             width: 240px;
             aspect-ratio: 1;
-            border-radius: 50%;
-            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .progress-ring {
+        svg {
             position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
             transform: rotate(-90deg);
             pointer-events: none;
         }
 
-        .progress-ring__circle {
-            stroke: rgba(56, 189, 248, 0.7);
-            stroke-width: 2;
+        circle {
             fill: transparent;
-            stroke-dasharray: 754 754;
+            stroke-width: 2;
+        }
+
+        .bg-ring {
+            stroke: rgba(255, 255, 255, 0.15);
+        }
+
+        .progress {
+            stroke: var(--accent);
+            stroke-dasharray: 754;
             stroke-dashoffset: 754;
             stroke-linecap: round;
         }
 
-        .progress-ring__bg {
-            stroke: rgba(255, 255, 255, 0.15);
-            stroke-width: 2;
-            fill: transparent;
+        .breathing {
+            animation: scale 10s infinite ease-in-out;
         }
 
-        .zen-circle.breathing {
-            animation: breathe-scale 10s infinite ease-in-out;
+        .breathing .progress {
+            animation: progress 10s infinite ease-in-out;
         }
 
-        .zen-circle.breathing .progress-ring__circle {
-            animation: breathe-progress 10s infinite ease-in-out;
+        @keyframes scale {
+            0%, 100% {
+                transform: scale(0.85);
+            }
+            50% {
+                transform: scale(1.1);
+            }
         }
 
-        @keyframes breathe-scale {
-            0%, 100% { transform: scale(0.85); }
-            50% { transform: scale(1.1); }
+        @keyframes progress {
+            0% {
+                stroke-dashoffset: 754;
+                opacity: 0.3;
+            }
+            50% {
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+            100% {
+                stroke-dashoffset: -754;
+                opacity: 0.3;
+            }
         }
 
-        @keyframes breathe-progress {
-            0% { stroke-dashoffset: 754; opacity: 0.3; }
-            50% { stroke-dashoffset: 0; opacity: 1; }
-            100% { stroke-dashoffset: -754; opacity: 0.3; }
-        }
-
-        .content-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        .content {
             z-index: 10;
+            text-align: center;
         }
 
         #timer {
             font-size: 1.2rem;
-            font-weight: 300;
+            cursor: pointer;
             color: rgba(255, 255, 255, 0.3);
             font-variant-numeric: tabular-nums;
-            display: none;
+        }
+
+        #plus {
+            font-size: 1.5rem;
             cursor: pointer;
+            color: rgba(255, 255, 255, 0.6);
             padding: 20px;
         }
 
-        .time-options {
-            display: flex;
-            gap: 2rem;
-            font-size: 1.2rem;
-            font-weight: 300;
-            letter-spacing: 2px;
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .time-options span {
-            cursor: pointer;
-            padding: 10px;
+        [hidden] {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-
-    <div id="circle" class="zen-circle">
-        <svg class="progress-ring" viewBox="0 0 242 242">
-            <circle class="progress-ring__bg" cx="121" cy="121" r="120"></circle>
-            <circle id="progressCircle" class="progress-ring__circle" cx="121" cy="121" r="120"></circle>
+    <div id="zen" class="zen">
+        <svg viewBox="0 0 242 242">
+            <circle class="bg-ring" cx="121" cy="121" r="120"/>
+            <circle class="progress" cx="121" cy="121" r="120"/>
         </svg>
-
-        <div class="content-area">
-            <div id="timer" onclick="reset()">00:00</div>
-            <div id="controls" class="time-options">
-                <span onclick="startTimer(300)">5</span>
-                <span onclick="startTimer(600)">10</span>
-                <span onclick="startTimer(900)">15</span>
-            </div>
+        <div class="content">
+            <div id="timer" onclick="reset()" hidden>00:00</div>
+            <div id="plus" onclick="start(300)">+5</div>
         </div>
     </div>
 
     <script>
-        let timeLeft = 0;
-        let timerId = null;
-        let isRunning = false;
-        let wakeLock = null;
+        let timeLeft = 0, timerId = null, wakeLock = null;
 
-        const circle = document.getElementById('circle');
-        const timerDisplay = document.getElementById('timer');
-        const controls = document.getElementById('controls');
+        const update = () => {
+            const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+            document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        };
 
-        function updateDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            timerDisplay.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
+        const toggleLock = async (on) => {
+            if (!('wakeLock' in navigator)) return;
+            try {
+                if (on) wakeLock = await navigator.wakeLock.request('screen');
+                else if (wakeLock) { wakeLock.release(); wakeLock = null; }
+            } catch {}
+        };
 
-        async function requestWakeLock() {
-            if ('wakeLock' in navigator) {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                } catch (err) {
-                    console.log(`Wake Lock error: ${err.name}, ${err.message}`);
-                }
-            }
-        }
-
-        function releaseWakeLock() {
-            if (wakeLock !== null) {
-                wakeLock.release();
-                wakeLock = null;
-            }
-        }
-
-        async function startTimer(seconds) {
-            timeLeft = seconds;
-            isRunning = true;
-            await requestWakeLock();
-            controls.style.display = 'none';
-            timerDisplay.style.display = 'block';
-            circle.classList.add('breathing');
-            updateDisplay();
+        async function start(sec) {
+            timeLeft = sec;
+            update();
+            document.getElementById('plus').hidden = true;
+            document.getElementById('timer').hidden = false;
+            document.getElementById('zen').classList.add('breathing');
+            await toggleLock(true);
+            
             timerId = setInterval(() => {
-                timeLeft--;
-                updateDisplay();
-                if (timeLeft <= 0) {
-                    reset();
-                }
+                if (--timeLeft < 0) reset();
+                else update();
             }, 1000);
         }
 
         function reset() {
-            isRunning = false;
             clearInterval(timerId);
-            circle.classList.remove('breathing');
-            releaseWakeLock();
-            controls.style.display = 'flex';
-            timerDisplay.style.display = 'none';
+            timeLeft = 0;
+            document.getElementById('plus').hidden = false;
+            document.getElementById('timer').hidden = true;
+            document.getElementById('zen').classList.remove('breathing');
+            toggleLock(false);
         }
 
-        document.addEventListener('visibilitychange', async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible' && isRunning) {
-                await requestWakeLock();
-            }
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && timeLeft > 0) toggleLock(true);
         });
-
-        updateDisplay();
     </script>
 </body>
 </html>
