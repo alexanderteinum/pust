@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>zen-circle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             background: #07192e;
             color: #bae6fd;
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             height: 100vh;
             display: flex;
             align-items: center;
@@ -43,7 +46,7 @@
         }
 
         .progress-ring__circle {
-            stroke: rgba(56, 189, 248, 0.4);
+            stroke: rgba(56, 189, 248, 0.7);
             stroke-width: 2;
             fill: transparent;
             stroke-dasharray: 754 754;
@@ -52,8 +55,8 @@
         }
 
         .progress-ring__bg {
-            stroke: rgba(255, 255, 255, 0.05);
-            stroke-width: 1;
+            stroke: rgba(255, 255, 255, 0.15);
+            stroke-width: 2;
             fill: transparent;
         }
 
@@ -87,7 +90,7 @@
         #timer {
             font-size: 1.2rem;
             font-weight: 300;
-            opacity: 0.8;
+            color: rgba(255, 255, 255, 0.3);
             font-variant-numeric: tabular-nums;
             display: none;
         }
@@ -98,17 +101,17 @@
             font-size: 1.2rem;
             font-weight: 300;
             letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.3);
         }
 
         .time-options span {
             cursor: pointer;
             padding: 10px;
-            transition: opacity 0.3s;
-            opacity: 0.6;
+            transition: opacity 0.3s, color 0.3s;
         }
 
         .time-options span:hover {
-            opacity: 1;
+            color: rgba(255, 255, 255, 0.8);
         }
     </style>
 </head>
