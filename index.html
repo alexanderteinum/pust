@@ -26,21 +26,54 @@
             aspect-ratio: 1;
             border-radius: 50%;
             background: transparent;
-            border: 1px solid rgba(56, 189, 248, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: border-color 1s ease;
+            transition: transform 1s ease;
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            pointer-events: none;
+        }
+
+        .progress-ring__circle {
+            stroke: rgba(56, 189, 248, 0.4);
+            stroke-width: 2;
+            fill: transparent;
+            stroke-dasharray: 754 754;
+            stroke-dashoffset: 754;
+            stroke-linecap: round;
+        }
+
+        .progress-ring__bg {
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 1;
+            fill: transparent;
         }
 
         .zen-circle.breathing {
-            animation: breathe 10s infinite ease-in-out;
-            border-color: rgba(125, 211, 252, 0.5);
+            animation: breathe-scale 10s infinite ease-in-out;
         }
 
-        @keyframes breathe {
-            0%, 100% { transform: scale(0.85); opacity: 0.4; }
-            50% { transform: scale(1.1); opacity: 1; }
+        .zen-circle.breathing .progress-ring__circle {
+            animation: breathe-progress 10s infinite ease-in-out;
+        }
+
+        @keyframes breathe-scale {
+            0%, 100% { transform: scale(0.85); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes breathe-progress {
+            0% { stroke-dashoffset: 754; opacity: 0.3; }
+            50% { stroke-dashoffset: 0; opacity: 1; }
+            100% { stroke-dashoffset: -754; opacity: 0.3; }
         }
 
         .content-area {
@@ -48,7 +81,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            pointer-events: auto;
+            z-index: 10;
         }
 
         #timer {
@@ -82,6 +115,11 @@
 <body onclick="handleBodyClick()">
 
     <div id="circle" class="zen-circle">
+        <svg class="progress-ring" viewBox="0 0 242 242">
+            <circle class="progress-ring__bg" cx="121" cy="121" r="120"></circle>
+            <circle id="progressCircle" class="progress-ring__circle" cx="121" cy="121" r="120"></circle>
+        </svg>
+
         <div class="content-area">
             <div id="timer">00:00</div>
             <div id="controls" class="time-options">
@@ -133,19 +171,13 @@
 
         async function startTimer(seconds, event) {
             if (event) event.stopPropagation();
-            
             timeLeft = seconds;
             isRunning = true;
-            
-            // Be om å holde skjermen våken
             await requestWakeLock();
-            
             controls.style.display = 'none';
             timerDisplay.style.display = 'block';
             circle.classList.add('breathing');
-            
             updateDisplay();
-            
             timerId = setInterval(() => {
                 timeLeft--;
                 updateDisplay();
@@ -159,15 +191,11 @@
             isRunning = false;
             clearInterval(timerId);
             circle.classList.remove('breathing');
-            
-            // Slipp skjermen fri igjen
             releaseWakeLock();
-            
             controls.style.display = 'flex';
             timerDisplay.style.display = 'none';
         }
 
-        // Håndter om brukeren bytter fane og kommer tilbake
         document.addEventListener('visibilitychange', async () => {
             if (wakeLock !== null && document.visibilityState === 'visible' && isRunning) {
                 await requestWakeLock();
