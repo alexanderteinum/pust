@@ -26,7 +26,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .zen {
+        .breath-circle {
             position: relative;
             width: 240px;
             aspect-ratio: 1;
@@ -102,7 +102,7 @@
     </style>
 </head>
 <body>
-    <div id="zen" class="zen" onclick="handleZenClick()">
+    <div id="breath-circle" class="breath-circle" onclick="handleClick()">
         <svg viewBox="0 0 242 242">
             <circle class="bg-ring" cx="121" cy="121" r="120"/>
             <circle class="progress" cx="121" cy="121" r="120"/>
@@ -116,7 +116,7 @@
     <script>
         let timeLeft = 0, timerId = null, wakeLock = null;
 
-        const update = () => {
+        const updateDisplay = () => {
             const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
             document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
         };
@@ -129,7 +129,7 @@
             } catch {}
         };
 
-        function handleZenClick() {
+        function handleClick() {
             if (timerId) reset();
             else start(300);
         }
@@ -139,18 +139,18 @@
             const totalMs = sec * 1000;
             
             timeLeft = sec;
-            update();
+            updateDisplay();
             
             document.getElementById('plus').hidden = true;
             document.getElementById('timer').hidden = false;
-            document.getElementById('zen').classList.add('breathing');
+            document.getElementById('breath-circle').classList.add('breathing');
             
             toggleLock(true);
 
             timerId = setInterval(() => {
                 const elapsed = Date.now() - startTime;
                 timeLeft = Math.max(0, Math.ceil((totalMs - elapsed) / 1000));
-                update();
+                updateDisplay();
                 if (timeLeft <= 0) reset();
             }, 100);
         }
@@ -161,7 +161,7 @@
             timeLeft = 0;
             document.getElementById('plus').hidden = false;
             document.getElementById('timer').hidden = true;
-            document.getElementById('zen').classList.remove('breathing');
+            document.getElementById('breath-circle').classList.remove('breathing');
             toggleLock(false);
         }
 
