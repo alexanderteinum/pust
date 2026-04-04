@@ -33,6 +33,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
         }
 
         svg {
@@ -80,18 +81,17 @@
         .content {
             z-index: 10;
             text-align: center;
+            pointer-events: none;
         }
 
         #timer {
             font-size: 1.2rem;
-            cursor: pointer;
             color: rgba(255, 255, 255, 0.3);
             font-variant-numeric: tabular-nums;
         }
 
         #plus {
             font-size: 1.5rem;
-            cursor: pointer;
             color: rgba(255, 255, 255, 0.6);
             padding: 20px;
         }
@@ -102,14 +102,14 @@
     </style>
 </head>
 <body>
-    <div id="zen" class="zen">
+    <div id="zen" class="zen" onclick="handleZenClick()">
         <svg viewBox="0 0 242 242">
             <circle class="bg-ring" cx="121" cy="121" r="120"/>
             <circle class="progress" cx="121" cy="121" r="120"/>
         </svg>
         <div class="content">
-            <div id="timer" onclick="reset()" hidden>00:00</div>
-            <div id="plus" onclick="start(300)">+5</div>
+            <div id="timer" hidden>00:00</div>
+            <div id="plus">+5</div>
         </div>
     </div>
 
@@ -128,6 +128,11 @@
                 else if (wakeLock) { wakeLock.release(); wakeLock = null; }
             } catch {}
         };
+
+        function handleZenClick() {
+            if (timerId) reset();
+            else start(300);
+        }
 
         function start(sec) {
             const startTime = Date.now();
@@ -152,6 +157,7 @@
 
         function reset() {
             clearInterval(timerId);
+            timerId = null;
             timeLeft = 0;
             document.getElementById('plus').hidden = false;
             document.getElementById('timer').hidden = true;
