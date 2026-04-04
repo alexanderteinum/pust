@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zen-circle</title>
+    <style>
+        body {
+            margin: 0;
+            background: #07192e;
+            color: #bae6fd;
+            font-family: system-ui, -apple-system, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .zen-circle {
+            position: relative;
+            width: 240px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 1s ease;
+        }
+
+        .zen-circle.breathing {
+            animation: breathe 10s infinite ease-in-out;
+            border-color: rgba(125, 211, 252, 0.5);
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.85); opacity: 0.4; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        #timer {
+            font-size: 1.2rem;
+            font-weight: 300;
+            opacity: 0.8;
+            font-variant-numeric: tabular-nums;
+            display: none;
+        }
+
+        .time-options {
+            display: flex;
+            gap: 2rem;
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .time-options span {
+            cursor: pointer;
+            padding: 10px;
+            transition: opacity 0.3s;
+            opacity: 0.6;
+        }
+
+        .time-options span:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body onclick="handleBodyClick()">
+
+    <div id="circle" class="zen-circle">
+        <div class="content-area">
+            <div id="timer">00:00</div>
+            <div id="controls" class="time-options">
+                <span onclick="startTimer(300, event)">5</span>
+                <span onclick="startTimer(600, event)">10</span>
+                <span onclick="startTimer(900, event)">15</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = 0;
+        let timerId = null;
+        let isRunning = false;
+        let wakeLock = null;
+
+        const circle = document.getElementById('circle');
+        const timerDisplay = document.getElementById('timer');
+        const controls = document.getElementById('controls');
+
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerDisplay.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) {
+                    console.log(`Wake Lock error: ${err.name}, ${err.message}`);
+                }
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        function handleBodyClick() {
+            if (isRunning) {
+                reset();
+            }
+        }
+
+        async function startTimer(seconds, event) {
+            if (event) event.stopPropagation();
+            
+            timeLeft = seconds;
+            isRunning = true;
+            
+            // Be om å holde skjermen våken
+            await requestWakeLock();
+            
+            controls.style.display = 'none';
+            timerDisplay.style.display = 'block';
+            circle.classList.add('breathing');
+            
+            updateDisplay();
+            
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft <= 0) {
+                    reset();
+                }
+            }, 1000);
+        }
+
+        function reset() {
+            isRunning = false;
+            clearInterval(timerId);
+            circle.classList.remove('breathing');
+            
+            // Slipp skjermen fri igjen
+            releaseWakeLock();
+            
+            controls.style.display = 'flex';
+            timerDisplay.style.display = 'none';
+        }
+
+        // Håndter om brukeren bytter fane og kommer tilbake
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible' && isRunning) {
+                await requestWakeLock();
+            }
+        });
+
+        updateDisplay();
+    </script>
+</body>
+</html>
