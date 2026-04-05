@@ -56,7 +56,7 @@
 
         .progress {
             stroke: var(--accent);
-            stroke-dasharray: 754;
+            stroke-dasharray: 754 754;
             stroke-dashoffset: 754;
             stroke-linecap: round;
         }
@@ -75,9 +75,9 @@
         }
 
         @keyframes progress {
-            0% { stroke-dashoffset: 754; opacity: 0.3; }
-            50% { stroke-dashoffset: 0; opacity: 1; }
-            100% { stroke-dashoffset: -754; opacity: 0.3; }
+            0% { stroke-dashoffset: 2262; opacity: 0.3; }
+            50% { stroke-dashoffset: 1508; opacity: 1; }
+            100% { stroke-dashoffset: 754; opacity: 0.3; }
         }
 
         .content {
