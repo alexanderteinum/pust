@@ -8,14 +8,27 @@
     <style>
         :root {
             --bg: #07192e;
-            --primary: #bae6fd;
-            --accent: rgba(56, 189, 248, 0.7);
+            --fg-dim: #3d576c;
+            --fg-subtle: #7294aa;
+            --ring-bg: #22384d;
+            --accent: #298cbb;
+            --accent-dim: #164a6b;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f8fafc;
+                --fg-dim: #b0cad8;
+                --fg-subtle: #6799b5;
+                --ring-bg: #d4e2ea;
+                --accent: #54bfef;
+                --accent-dim: #b2e1f6;
+            }
         }
 
         body {
             margin: 0;
             background: var(--bg);
-            color: var(--primary);
             font-family: 'Inter', sans-serif;
             height: 100vh;
             display: flex;
@@ -24,6 +37,7 @@
             overflow: hidden;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            transition: background 0.5s ease;
         }
 
         .breath-circle {
@@ -51,11 +65,12 @@
         }
 
         .bg-ring {
-            stroke: rgba(255, 255, 255, 0.15);
+            stroke: var(--ring-bg);
+            transition: stroke 0.5s ease;
         }
 
         .progress {
-            stroke: var(--accent);
+            stroke: var(--accent-dim);
             stroke-dasharray: 754 754;
             stroke-dashoffset: 754;
             stroke-linecap: round;
@@ -75,9 +90,18 @@
         }
 
         @keyframes progress {
-            0% { stroke-dashoffset: 2262; opacity: 0.3; }
-            50% { stroke-dashoffset: 1508; opacity: 1; }
-            100% { stroke-dashoffset: 754; opacity: 0.3; }
+            0% { 
+                stroke-dashoffset: 2262; 
+                stroke: var(--accent-dim); 
+            }
+            50% { 
+                stroke-dashoffset: 1508; 
+                stroke: var(--accent); 
+            }
+            100% { 
+                stroke-dashoffset: 754; 
+                stroke: var(--accent-dim); 
+            }
         }
 
         .content {
@@ -88,14 +112,16 @@
 
         #timer {
             font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.3);
+            color: var(--fg-dim);
             font-variant-numeric: tabular-nums;
+            transition: color 0.5s ease;
         }
 
         #plus {
             font-size: 1.5rem;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--fg-subtle);
             padding: 20px;
+            transition: color 0.5s ease;
         }
 
         [hidden] {
