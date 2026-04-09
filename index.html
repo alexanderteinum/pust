@@ -75,21 +75,24 @@
         }
 
         .breathing {
-            animation: scale 10s infinite ease-in-out;
+            animation: scale 19s infinite ease-in-out;
         }
 
         .breathing .progress {
-            animation: progress 10s infinite ease-in-out;
+            animation: progress 19s infinite ease-in-out;
         }
 
         @keyframes scale {
-            0%, 100% { transform: scale(0.85); }
-            50% { transform: scale(1.1); }
+            0% { transform: scale(0.85); }
+            21.05% { transform: scale(1.1); }
+            57.89% { transform: scale(1.1); }
+            100% { transform: scale(0.85); }
         }
 
         @keyframes progress {
             0% { stroke-dashoffset: 2262; }
-            50% { stroke-dashoffset: 1508; }
+            21.05% { stroke-dashoffset: 1508; }
+            57.89% { stroke-dashoffset: 1508; }
             100% { stroke-dashoffset: 754; }
         }
 
@@ -97,18 +100,36 @@
             z-index: 10;
             text-align: center;
             pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #phase-label {
+            font-size: 1.1rem;
+            color: var(--fg-subtle);
+            text-transform: lowercase;
+            margin-bottom: 4px;
+        }
+
+        #phase-timer {
+            font-size: 3.5rem;
+            color: var(--accent);
+            font-weight: 300;
+            line-height: 1;
         }
 
         #timer {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--fg-dim);
             font-variant-numeric: tabular-nums;
-            transition: color 0.5s ease;
+            margin-top: 8px;
         }
 
-        #plus {
-            font-size: 1.5rem;
+        #start {
+            font-size: 1.4rem;
             color: var(--fg-subtle);
+            text-transform: lowercase;
             padding: 20px;
             transition: color 0.5s ease;
         }
@@ -125,17 +146,39 @@
             <circle class="progress" cx="121" cy="121" r="120"/>
         </svg>
         <div class="content">
+            <div id="phase-label" hidden></div>
+            <div id="phase-timer" hidden></div>
             <div id="timer" hidden>00:00</div>
-            <div id="plus">+5</div>
+            <div id="start">Start</div>
         </div>
     </div>
 
     <script>
         let timeLeft = 0, timerId = null, wakeLock = null;
 
-        const updateDisplay = () => {
+        const updateDisplay = (elapsedMs) => {
             const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
             document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+
+            if (elapsedMs !== undefined) {
+                const totalCycle = 19000;
+                const inCycle = elapsedMs % totalCycle;
+                let label, phaseTime;
+
+                if (inCycle < 4000) {
+                    label = "Pust inn";
+                    phaseTime = Math.ceil((4000 - inCycle) / 1000);
+                } else if (inCycle < 11000) {
+                    label = "Hold";
+                    phaseTime = Math.ceil((11000 - inCycle) / 1000);
+                } else {
+                    label = "Pust ut";
+                    phaseTime = Math.ceil((19000 - inCycle) / 1000);
+                }
+
+                document.getElementById('phase-label').textContent = label;
+                document.getElementById('phase-timer').textContent = phaseTime;
+            }
         };
 
         const toggleLock = async (on) => {
@@ -148,7 +191,7 @@
 
         function handleClick() {
             if (timerId) reset();
-            else start(300);
+            else start(76);
         }
 
         function start(sec) {
@@ -156,10 +199,12 @@
             const totalMs = sec * 1000;
             
             timeLeft = sec;
-            updateDisplay();
+            updateDisplay(0);
             
-            document.getElementById('plus').hidden = true;
+            document.getElementById('start').hidden = true;
             document.getElementById('timer').hidden = false;
+            document.getElementById('phase-label').hidden = false;
+            document.getElementById('phase-timer').hidden = false;
             document.getElementById('breath-circle').classList.add('breathing');
             
             toggleLock(true);
@@ -167,7 +212,7 @@
             timerId = setInterval(() => {
                 const elapsed = Date.now() - startTime;
                 timeLeft = Math.max(0, Math.ceil((totalMs - elapsed) / 1000));
-                updateDisplay();
+                updateDisplay(elapsed);
                 if (timeLeft <= 0) reset();
             }, 100);
         }
@@ -176,8 +221,10 @@
             clearInterval(timerId);
             timerId = null;
             timeLeft = 0;
-            document.getElementById('plus').hidden = false;
+            document.getElementById('start').hidden = false;
             document.getElementById('timer').hidden = true;
+            document.getElementById('phase-label').hidden = true;
+            document.getElementById('phase-timer').hidden = true;
             document.getElementById('breath-circle').classList.remove('breathing');
             toggleLock(false);
         }

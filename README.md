@@ -1,15 +1,12 @@
 # pust
 
-A minimal, web-based breathing exercise designed to help you relax and focus.
+A minimal 4-7-8 breathing exercise. Each 4 cycles session is designed to help you find your calm.
 
 **[Try the app live here](https://pust-app.netlify.app/)**
 
 ## Features
 
-- **Visual Breathing Guide**: A soothing, animated circle that expands and contracts to guide your breathing rhythm.
-- **The “+5” Concept**: A quiet invitation to start your journey—and stay for just five more minutes.
 - **Light & Dark Mode**: Automatically adapts to your system’s color scheme.
-- **Minimalist Design**: Clean, modern interface with a focus on typography and fine lines.
 - **Screen Wake Lock**: Prevents your screen from dimming or turning off during your session.
 - **Zero Dependencies**: Built with pure HTML, CSS, and JavaScript.
 
