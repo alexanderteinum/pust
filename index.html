@@ -119,11 +119,22 @@
             line-height: 1;
         }
 
-        #timer {
-            font-size: 1.1rem;
-            color: var(--fg-dim);
-            font-variant-numeric: tabular-nums;
-            margin-top: 8px;
+        #cycle-dots {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            border: 1px solid var(--fg-dim);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .dot.filled {
+            background: var(--fg-dim);
         }
 
         #start {
@@ -148,7 +159,12 @@
         <div class="content">
             <div id="phase-label" hidden></div>
             <div id="phase-timer" hidden></div>
-            <div id="timer" hidden>00:00</div>
+            <div id="cycle-dots" hidden>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
             <div id="start">Start</div>
         </div>
     </div>
@@ -157,12 +173,11 @@
         let timeLeft = 0, timerId = null, wakeLock = null;
 
         const updateDisplay = (elapsedMs) => {
-            const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
-            document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
-
             if (elapsedMs !== undefined) {
                 const totalCycle = 19000;
                 const inCycle = elapsedMs % totalCycle;
+                const completedCycles = Math.floor(elapsedMs / totalCycle);
+                
                 let label, phaseTime;
 
                 if (inCycle < 4000) {
@@ -178,6 +193,11 @@
 
                 document.getElementById('phase-label').textContent = label;
                 document.getElementById('phase-timer').textContent = phaseTime;
+
+                const dots = document.querySelectorAll('.dot');
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('filled', i < completedCycles);
+                });
             }
         };
 
@@ -202,9 +222,9 @@
             updateDisplay(0);
             
             document.getElementById('start').hidden = true;
-            document.getElementById('timer').hidden = false;
             document.getElementById('phase-label').hidden = false;
             document.getElementById('phase-timer').hidden = false;
+            document.getElementById('cycle-dots').hidden = false;
             document.getElementById('breath-circle').classList.add('breathing');
             
             toggleLock(true);
@@ -212,8 +232,9 @@
             timerId = setInterval(() => {
                 const elapsed = Date.now() - startTime;
                 timeLeft = Math.max(0, Math.ceil((totalMs - elapsed) / 1000));
-                updateDisplay(elapsed);
+                
                 if (timeLeft <= 0) reset();
+                else updateDisplay(elapsed);
             }, 100);
         }
 
@@ -222,10 +243,11 @@
             timerId = null;
             timeLeft = 0;
             document.getElementById('start').hidden = false;
-            document.getElementById('timer').hidden = true;
             document.getElementById('phase-label').hidden = true;
             document.getElementById('phase-timer').hidden = true;
+            document.getElementById('cycle-dots').hidden = true;
             document.getElementById('breath-circle').classList.remove('breathing');
+            document.querySelectorAll('.dot').forEach(dot => dot.classList.remove('filled'));
             toggleLock(false);
         }
 
