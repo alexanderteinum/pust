@@ -8,18 +8,14 @@
     <style>
         :root {
             --bg: #07192e;
-            --fg-dim: #3d576c;
-            --fg-subtle: #5d728d;
-            --ring-bg: #22384d;
+            --fg: #3d576c;
             --accent: #298cbb;
         }
 
         @media (prefers-color-scheme: light) {
             :root {
                 --bg: #f8fafc;
-                --fg-dim: #94a3b8;
-                --fg-subtle: #6b7280;
-                --ring-bg: #cbd5e1;
+                --fg: #94a3b8;
                 --accent: #0284c7;
             }
         }
@@ -47,161 +43,51 @@
             justify-content: center;
             cursor: pointer;
             border-radius: 50%;
+            border: 1px solid var(--fg);
+            background: transparent;
         }
 
-        svg {
+        #inner-circle {
             position: absolute;
             width: 100%;
             height: 100%;
-            transform: rotate(-90deg);
-            pointer-events: none;
-        }
-
-        circle {
-            fill: transparent;
-            stroke-width: 1;
-        }
-
-        .bg-ring {
-            stroke: var(--ring-bg);
-            transition: stroke 0.5s ease;
-        }
-
-        .progress {
-            stroke: var(--accent);
-            stroke-dasharray: 754 754;
-            stroke-dashoffset: 754;
-            stroke-linecap: round;
-        }
-
-        .breathing-44 {
-            animation: scale-44 8s infinite ease-in-out;
-        }
-
-        .breathing-44 .progress {
-            animation: progress-44 8s infinite ease-in-out;
-        }
-
-        .breathing-55 {
-            animation: scale-55 10s infinite ease-in-out;
-        }
-
-        .breathing-55 .progress {
-            animation: progress-55 10s infinite ease-in-out;
-        }
-
-        .breathing-478 {
-            animation: scale-478 19s infinite ease-in-out;
-        }
-
-        .breathing-478 .progress {
-            animation: progress-478 19s infinite ease-in-out;
-        }
-
-        @keyframes scale-44 {
-            0% { transform: scale(0.85); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(0.85); }
-        }
-
-        @keyframes progress-44 {
-            0% { stroke-dashoffset: 2262; }
-            50% { stroke-dashoffset: 1508; }
-            100% { stroke-dashoffset: 754; }
-        }
-
-        @keyframes scale-55 {
-            0% { transform: scale(0.85); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(0.85); }
-        }
-
-        @keyframes progress-55 {
-            0% { stroke-dashoffset: 2262; }
-            50% { stroke-dashoffset: 1508; }
-            100% { stroke-dashoffset: 754; }
-        }
-
-        @keyframes scale-478 {
-            0% { transform: scale(0.85); }
-            21.05% { transform: scale(1.1); }
-            57.89% { transform: scale(1.1); }
-            100% { transform: scale(0.85); }
-        }
-
-        @keyframes progress-478 {
-            0% { stroke-dashoffset: 2262; }
-            21.05% { stroke-dashoffset: 1508; }
-            57.89% { stroke-dashoffset: 1508; }
-            100% { stroke-dashoffset: 754; }
-        }
-
-        .content {
-            z-index: 10;
-            text-align: center;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #phase-label {
-            font-size: 1.1rem;
-            color: var(--fg-subtle);
-            text-transform: lowercase;
-            margin-bottom: 10px;
-        }
-
-        #phase-timer {
-            font-size: 3.5rem;
-            color: var(--accent);
-            font-weight: 300;
-            line-height: 1;
-        }
-
-        #phase-timer.timer-simple {
-            font-size: 1.4rem;
-            color: var(--fg-subtle);
-            text-transform: lowercase;
-            margin-bottom: 0;
-        }
-
-        #cycle-dots {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
-        }
-
-        .dot {
-            width: 6px;
-            height: 6px;
+            background: var(--fg);
             border-radius: 50%;
-            border: 1px solid var(--fg-dim);
-            transition: background 0.3s ease, border-color 0.3s ease;
+            transform: scale(0.4);
+            opacity: 0.15;
+            pointer-events: none;
         }
 
-        .dot.filled {
-            background: var(--fg-dim);
+        .breathing {
+            animation: scale-outer 8s infinite ease-in-out;
         }
 
-        #menu {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            pointer-events: auto;
+        .breathing #inner-circle {
+            animation: scale-inner 8s infinite ease-in-out;
         }
 
-        .menu-option {
+        @keyframes scale-outer {
+            0% { transform: scale(0.85); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(0.85); }
+        }
+
+        @keyframes scale-inner {
+            0% { transform: scale(0.4); }
+            50% { transform: scale(0.90); }
+            100% { transform: scale(0.4); }
+        }
+
+        #start, #timer {
+            z-index: 10;
             font-size: 1.4rem;
-            color: var(--fg-subtle);
+            color: var(--fg);
             text-transform: lowercase;
-            cursor: pointer;
             transition: color 0.3s ease;
-            padding: 5px 20px;
         }
 
         @media (hover: hover) {
-            .menu-option:hover {
+            #start:hover {
                 color: var(--accent);
             }
         }
@@ -212,111 +98,20 @@
     </style>
 </head>
 <body>
-    <div id="breath-circle" class="breath-circle" onclick="handleCircleClick()">
-        <svg viewBox="0 0 242 242">
-            <circle class="bg-ring" cx="121" cy="121" r="120"/>
-            <circle class="progress" cx="121" cy="121" r="120"/>
-        </svg>
-        <div class="content">
-            <div id="phase-label" hidden></div>
-            <div id="phase-timer" hidden></div>
-            <div id="cycle-dots" hidden></div>
-            <div id="menu">
-                <div class="menu-option" onclick="event.stopPropagation(); startBreathing('4-4')">4–4</div>
-                <div class="menu-option" onclick="event.stopPropagation(); startBreathing('5-5')">5–5</div>
-                <div class="menu-option" onclick="event.stopPropagation(); startBreathing('4-7-8')">4–7–8</div>
-            </div>
-        </div>
+    <div id="breath-circle" class="breath-circle" onclick="handleClick()">
+        <div id="inner-circle" hidden></div>
+        <div id="start">Start</div>
+        <div id="timer" hidden></div>
     </div>
 
     <script>
-        let timeLeft = 0, timerId = null, wakeLock = null;
-        let currentPattern = null;
-
-        const PATTERNS = {
-            '4-4': {
-                id: '4-4',
-                phases: [
-                    { name: "Pust inn", duration: 4000 },
-                    { name: "Pust ut", duration: 4000 }
-                ],
-                totalCycle: 8000,
-                totalSec: 300,
-                dots: 0,
-                class: 'breathing-44',
-                simpleUI: true
-            },
-            '5-5': {
-                id: '5-5',
-                phases: [
-                    { name: "Pust inn", duration: 5000 },
-                    { name: "Pust ut", duration: 5000 }
-                ],
-                totalCycle: 10000,
-                totalSec: 300,
-                dots: 0,
-                class: 'breathing-55',
-                simpleUI: true
-            },
-            '4-7-8': {
-                id: '4-7-8',
-                phases: [
-                    { name: "Pust inn", duration: 4000 },
-                    { name: "Hold", duration: 7000 },
-                    { name: "Pust ut", duration: 8000 }
-                ],
-                totalCycle: 19000,
-                totalSec: 76,
-                dots: 4,
-                class: 'breathing-478',
-                simpleUI: false
-            }
-        };
+        let isBreathing = false, wakeLock = null;
+        let timeLeft = 304, timerId = null;
 
         const formatTime = (s) => {
             const mins = Math.floor(s / 60);
             const secs = s % 60;
             return `${mins}:${secs.toString().padStart(2, '0')}`;
-        };
-
-        const updateDisplay = (elapsedMs) => {
-            if (!currentPattern) return;
-
-            const labelEl = document.getElementById('phase-label');
-            const timerEl = document.getElementById('phase-timer');
-
-            if (currentPattern.simpleUI) {
-                labelEl.hidden = true;
-                timerEl.classList.add('timer-simple');
-                timerEl.textContent = formatTime(timeLeft);
-                return;
-            }
-
-            timerEl.classList.remove('timer-simple');
-            const inCycle = elapsedMs % currentPattern.totalCycle;
-            const completedCycles = Math.floor(elapsedMs / currentPattern.totalCycle);
-            
-            let label, phaseTime, currentSum = 0;
-
-            for (const phase of currentPattern.phases) {
-                currentSum += phase.duration;
-                if (inCycle < currentSum) {
-                    label = phase.name;
-                    phaseTime = Math.ceil((currentSum - inCycle) / 1000);
-                    break;
-                }
-            }
-
-            labelEl.hidden = false;
-            labelEl.textContent = label;
-            timerEl.textContent = phaseTime;
-
-            if (currentPattern.dots > 0) {
-                const dots = document.querySelectorAll('.dot');
-                dots.forEach((dot, i) => {
-                    dot.classList.toggle('filled', i <= completedCycles);
-                });
-            }
         };
 
         const toggleLock = async (on) => {
@@ -327,66 +122,52 @@
             } catch {}
         };
 
-        function handleCircleClick() {
-            if (timerId) reset();
+        function handleClick() {
+            if (isBreathing) reset();
+            else start();
         }
 
-        function startBreathing(type) {
-            currentPattern = PATTERNS[type];
+        function start() {
+            isBreathing = true;
             const startTime = Date.now();
-            const totalMs = currentPattern.totalSec * 1000;
+            const totalMs = 304 * 1000;
             
-            timeLeft = currentPattern.totalSec;
+            document.getElementById('start').hidden = true;
+            document.getElementById('timer').hidden = false;
+            document.getElementById('timer').textContent = formatTime(304);
+            document.getElementById('inner-circle').hidden = false;
             
-            const dotsContainer = document.getElementById('cycle-dots');
-            dotsContainer.innerHTML = '';
-            if (currentPattern.dots > 0) {
-                for (let i = 0; i < currentPattern.dots; i++) {
-                    const dot = document.createElement('div');
-                    dot.className = 'dot';
-                    dotsContainer.appendChild(dot);
-                }
-                dotsContainer.hidden = false;
-            } else {
-                dotsContainer.hidden = true;
-            }
-
-            document.getElementById('menu').hidden = true;
-            document.getElementById('phase-timer').hidden = false;
-            
-            updateDisplay(0);
-            
-            document.getElementById('breath-circle').classList.add(currentPattern.class);
+            const circle = document.getElementById('breath-circle');
+            circle.classList.remove('breathing');
+            void circle.offsetWidth; // Force reflow to restart animation
+            circle.classList.add('breathing');
             
             toggleLock(true);
 
             timerId = setInterval(() => {
-                const elapsed = Date.now() - startTime;
-                timeLeft = Math.max(0, Math.ceil((totalMs - elapsed) / 1000));
+                const elapsedMs = Date.now() - startTime;
+                timeLeft = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
+                document.getElementById('timer').textContent = formatTime(timeLeft);
                 
                 if (timeLeft <= 0) reset();
-                else updateDisplay(elapsed);
             }, 100);
         }
 
         function reset() {
+            isBreathing = false;
             clearInterval(timerId);
             timerId = null;
-            timeLeft = 0;
-            document.getElementById('menu').hidden = false;
-            document.getElementById('phase-label').hidden = true;
-            document.getElementById('phase-timer').hidden = true;
-            document.getElementById('phase-timer').classList.remove('timer-simple');
-            document.getElementById('cycle-dots').hidden = true;
-            if (currentPattern) {
-                document.getElementById('breath-circle').classList.remove(currentPattern.class);
-            }
+            
+            document.getElementById('start').hidden = false;
+            document.getElementById('timer').hidden = true;
+            document.getElementById('inner-circle').hidden = true;
+            document.getElementById('breath-circle').classList.remove('breathing');
+            
             toggleLock(false);
-            currentPattern = null;
         }
 
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && timeLeft > 0) toggleLock(true);
+            if (document.visibilityState === 'visible' && isBreathing) toggleLock(true);
         });
     </script>
 </body>
