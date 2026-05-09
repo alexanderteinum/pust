@@ -9,14 +9,12 @@
         :root {
             --bg: #07192e;
             --fg: #94a3b8;
-            --accent: #298cbb;
         }
 
         @media (prefers-color-scheme: light) {
             :root {
                 --bg: #f8fafc;
                 --fg: #64748b;
-                --accent: #0284c7;
             }
         }
 
@@ -86,7 +84,7 @@
             font-size: 1.4rem;
             color: var(--fg);
             text-transform: lowercase;
-            transition: color 0.3s ease, opacity 1s ease;
+            transition: opacity 1s ease;
         }
 
         #timer {
@@ -110,12 +108,6 @@
         .fading #start {
             opacity: 1;
             pointer-events: auto;
-        }
-
-        @media (hover: hover) {
-            #start:hover {
-                color: var(--accent);
-            }
         }
     </style>
 </head>
