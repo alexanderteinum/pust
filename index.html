@@ -8,7 +8,7 @@
     <style>
         :root {
             --bg: #07192e;
-            --fg: #3d576c;
+            --fg: #5e7d9a;
             --accent: #298cbb;
         }
 
@@ -54,8 +54,9 @@
             background: var(--fg);
             border-radius: 50%;
             transform: scale(0.4);
-            opacity: 0.15;
+            opacity: 0;
             pointer-events: none;
+            transition: opacity 1s ease;
         }
 
         .breathing {
@@ -63,6 +64,7 @@
         }
 
         .breathing #inner-circle {
+            opacity: 0.15;
             animation: scale-inner 8s infinite ease-in-out;
         }
 
@@ -79,11 +81,35 @@
         }
 
         #start, #timer {
+            position: absolute;
             z-index: 10;
             font-size: 1.4rem;
             color: var(--fg);
             text-transform: lowercase;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, opacity 1s ease;
+        }
+
+        #timer {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .breathing #timer {
+            opacity: 1;
+        }
+
+        .breathing #start {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .fading #inner-circle, .fading #timer {
+            opacity: 0;
+        }
+
+        .fading #start {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         @media (hover: hover) {
@@ -91,17 +117,13 @@
                 color: var(--accent);
             }
         }
-
-        [hidden] {
-            display: none !important;
-        }
     </style>
 </head>
 <body>
     <div id="breath-circle" class="breath-circle" onclick="handleClick()">
-        <div id="inner-circle" hidden></div>
+        <div id="inner-circle"></div>
         <div id="start">Start</div>
-        <div id="timer" hidden></div>
+        <div id="timer"></div>
     </div>
 
     <script>
@@ -132,15 +154,11 @@
             const startTime = Date.now();
             const totalMs = 304 * 1000;
             
-            document.getElementById('start').hidden = true;
-            document.getElementById('timer').hidden = false;
-            document.getElementById('timer').textContent = formatTime(304);
-            document.getElementById('inner-circle').hidden = false;
-            
             const circle = document.getElementById('breath-circle');
-            circle.classList.remove('breathing');
-            void circle.offsetWidth; // Force reflow to restart animation
+            circle.classList.remove('fading');
             circle.classList.add('breathing');
+            
+            document.getElementById('timer').textContent = formatTime(304);
             
             toggleLock(true);
 
@@ -148,6 +166,10 @@
                 const elapsedMs = Date.now() - startTime;
                 timeLeft = Math.max(0, Math.ceil((totalMs - elapsedMs) / 1000));
                 document.getElementById('timer').textContent = formatTime(timeLeft);
+                
+                if (timeLeft <= 1) {
+                    circle.classList.add('fading');
+                }
                 
                 if (timeLeft <= 0) reset();
             }, 100);
@@ -158,10 +180,9 @@
             clearInterval(timerId);
             timerId = null;
             
-            document.getElementById('start').hidden = false;
-            document.getElementById('timer').hidden = true;
-            document.getElementById('inner-circle').hidden = true;
-            document.getElementById('breath-circle').classList.remove('breathing');
+            const circle = document.getElementById('breath-circle');
+            circle.classList.remove('breathing');
+            circle.classList.remove('fading');
             
             toggleLock(false);
         }
